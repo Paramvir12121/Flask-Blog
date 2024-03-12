@@ -16,16 +16,16 @@ def about():
     return render_template("about.html",current_year=current_year)
 
 
-@app.route("/guess/<user_name>")
-def guess(user_name):
-    params = {
-        "name": user_name
-    }
-    response = requests.get("https://api.genderize.io",params=params)
-    gender = response.json()["gender"]
-    response = requests.get("https://api.agify.io",params=params)
-    age = response.json()["age"]
-    return render_template('guess.html',gender=gender,age=age)
+# @app.route("/guess/<user_name>")
+# def guess(user_name):
+#     params = {
+#         "name": user_name
+#     }
+#     response = requests.get("https://api.genderize.io",params=params)
+#     gender = response.json()["gender"]
+#     response = requests.get("https://api.agify.io",params=params)
+#     age = response.json()["age"]
+#     return render_template('guess.html',gender=gender,age=age)
 
 
 # to run whithout using cmd >flask --app <filename> run 
