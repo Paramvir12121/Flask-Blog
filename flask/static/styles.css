@@ -49,3 +49,12 @@ h1 {
         font-size: calc(1.525rem + 3.3vw);
     }
 }
+
+.navbar-dark .navbar-nav .nav-link {
+    color: black !important; /* Change text color to black */
+}
+
+/* For the active state of the link */
+.navbar-dark .navbar-nav .nav-link.active {
+    color: black !important; /* Ensure active state also has black text */
+}
