@@ -1,8 +1,19 @@
 #footer {
-    position:absolute;
+    position: relative;
     bottom:0;
     width:90%;
     text-align: center;
+}
+
+
+.transparent-navbar {
+    background-color: rgba(0, 0, 0, 0) !important; /* Make navbar background transparent */
+    backdrop-filter: blur(10px); /* Optional: Apply blur effect to the background content */
+}
+
+/* Ensure the content below the navbar is not hidden behind it */
+.body-content {
+    padding-top: 70px; /* Adjust this value based on the navbar's height */
 }
 
 .masthead {
@@ -11,6 +22,11 @@
     position: relative;
     color: white;
     text-shadow: 2px 2px 2px rgba(0,0, 0, .2);
+    
+}
+
+h1 {
+    font-size: 4rem;
 }
 
 .color-overlay {
@@ -18,7 +34,12 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0,0, 0, .4);
+    display: flex; /* Ensure flex display */
+    flex-direction: column; /* Stack flex items vertically */
+    justify-content: center; /* Center items vertically */
+    align-items: center; /* Center items horizontally */
 }
+
 
 @media (max-width: 760px) {
     .masthead {
