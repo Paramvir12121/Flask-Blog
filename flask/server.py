@@ -2,11 +2,21 @@ from flask import Flask,render_template
 from flask import request
 import random, time, requests
 
+from flask_wtf import FlaskForm
+from wtforms.validators import DataRequired
+from wtforms import StringField, PasswordField
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+
 current_year = time.localtime().tm_year
 print(current_year)
 
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'  # Change to your secret key
+
 
 @app.route("/")
 def home():
@@ -32,7 +42,15 @@ def contact():
 
 @app.route("/login",methods=[ "GET","POST"])
 def login():
-    return render_template("login.html",current_year=current_year)
+    form = LoginForm()
+    if form.validate_on_submit():
+        pass
+    # # if request.method == 'POST':
+    # #      email = StringField('inputEmail')
+    # #      password = PasswordField('inputPassword')
+    #     return render_template("home.html",current_year=current_year)
+    # else:
+    return render_template("login.html",current_year=current_year,form=form)
 
 
 
