@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="masthead" style=" background-image: url('../static/images/tree.jpg');">
+    <main class="color-overlay d-flex justify-content-center align-items-center p-5 body-content">
+    
+      <div class="col-5">
+        <div class="card">
+          <div class="card-body">
+            <h2>Login</h2>
+            <form>
+              <div class="mb-3">
+                <label for="inputEmail" class="form-label">Email address</label>
+                <input type="email" class="form-control" name="inputEmail" aria-describedby="emailHelp">
+              </div>
+              <div class="mb-3">
+                <label for="inputPassword" class="form-label">Password</label>
+                <input type="password" class="form-control" name="inputPassword">
+              </div>
+              <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+</main>
+</div>
+{% endblock %}
