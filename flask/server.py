@@ -20,23 +20,14 @@ def about():
 @app.route("/contact",methods=[ "GET","POST"])
 def contact():
     if request.method == 'POST':
-        messsage = request.form['message']
+        sender_name = request.form['name']
+        sender_email = request.form['email']
+        message = request.form['message']
+        with open('messages.txt', 'a') as file:  # Open the text file in append mode
+            file.write(f"from:{sender_name}\nemail:{sender_email}\n{message}\n\n")  # Write the message to the file with a newline
         return render_template("home.html",current_year=current_year)
     else:
         return render_template("contact.html",current_year=current_year)
-
-
-# @app.route("/guess/<user_name>")
-# def guess(user_name):
-#     params = {
-#         "name": user_name
-#     }
-#     response = requests.get("https://api.genderize.io",params=params)
-#     gender = response.json()["gender"]
-#     response = requests.get("https://api.agify.io",params=params)
-#     age = response.json()["age"]
-#     return render_template('guess.html',gender=gender,age=age)
-
 
 # to run whithout using cmd >flask --app <filename> run 
 # Allows to just use python hello.py
