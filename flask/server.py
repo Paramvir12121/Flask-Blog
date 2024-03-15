@@ -3,6 +3,7 @@ from flask import request
 import random, time, requests
 
 from flask_wtf import FlaskForm
+from flask_bootstrap import Bootstrap5
 from wtforms.validators import DataRequired,Email
 from wtforms import StringField, PasswordField,SubmitField,ValidationError
 # from flask_wtf.csrf import CSRFProtect
@@ -30,11 +31,10 @@ print(current_year)
 
 
 
-
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Change to your secret key
-# csrf = CSRFProtect(app)  # might not be needed, look into documentation
+bootstrap = Bootstrap5(app)
+    # csrf = CSRFProtect(app)  # might not be needed, look into documentation
 
 
 @app.route("/")
@@ -63,7 +63,7 @@ def contact():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        
+        pass
     # if request.method == 'POST':
     #      email = StringField('inputEmail')
     #      password = PasswordField('inputPassword')
