@@ -6,21 +6,30 @@
        
       <div class="col-5">
         <div class="card">
-          <div class="card-body">
+          <div class="card-body mx-3">
             <h2>Login</h2>
-            <form action="/login" method="post">
-                {‌{ form.csrf_token }}
-              <!-- <div class="mb-3">
-                <label for="inputEmail" class="form-label">Email address</label>
-                <input type="email" class="form-control" name="inputEmail" aria-describedby="emailHelp">
+            <form action="{{url_for('login')}}" method="post" novalidate>
+              <div class="py-3">
+              {{ form.csrf_token }}
+              {{ form.username.label }}<br/> {{ form.username(size=40) }}
+              {% if form.username.errors %}
+                <div class="alert alert-warning py-1 my-1">
+                  {% for error in form.username.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}</div>
+              {% endif %}
+              <br/>
+
+              {{ form.password.label }}<br/> {{ form.password(size=40) }}
+              {% if form.password.errors %}
+                <div class="alert alert-warning py-1 my-1">
+                  {% for error in form.password.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}</div>
+              {% endif %}
               </div>
-              <div class="mb-3">
-                <label for="inputPassword" class="form-label">Password</label>
-                <input type="password" class="form-control" name="inputPassword">
-              </div> -->
-              {{ form.username.label }} {{ form.username(size=30) }}
-              {{ form.password.label }} {{ form.password(size=20) }}
-              <button type="submit" class="btn btn-primary">Login</button>
+              <br/>
+              <button type="submit" class="btn btn-primary">{{form.submit}}</button>
             </form>
           </div>
         </div>

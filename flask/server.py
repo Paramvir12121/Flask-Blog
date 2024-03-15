@@ -4,11 +4,15 @@ import random, time, requests
 
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired
-from wtforms import StringField, PasswordField
+from wtforms import StringField, PasswordField,SubmitField
+# from flask_wtf.csrf import CSRFProtect
+
+
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Log In')
 
 current_year = time.localtime().tm_year
 print(current_year)
@@ -16,6 +20,7 @@ print(current_year)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Change to your secret key
+# csrf = CSRFProtect(app)  # might not be needed, look into documentation
 
 
 @app.route("/")
@@ -40,17 +45,17 @@ def contact():
         return render_template("contact.html",current_year=current_year)
 
 
-@app.route("/login",methods=[ "GET","POST"])
+@app.route("/login",methods=[ "GET","POST"] )
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        pass
-    # # if request.method == 'POST':
-    # #      email = StringField('inputEmail')
-    # #      password = PasswordField('inputPassword')
-    #     return render_template("home.html",current_year=current_year)
-    # else:
-    return render_template("login.html",current_year=current_year,form=form)
+        
+    # if request.method == 'POST':
+    #      email = StringField('inputEmail')
+    #      password = PasswordField('inputPassword')
+        return render_template("home.html",current_year=current_year)
+    else:
+        return render_template("login.html",current_year=current_year,form=form)
 
 
 
