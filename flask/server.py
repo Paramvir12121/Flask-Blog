@@ -5,7 +5,7 @@ import random, time, requests
 from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
 from wtforms.validators import DataRequired,Email
-from wtforms import StringField, PasswordField,SubmitField,ValidationError
+from wtforms import StringField, PasswordField,SubmitField,ValidationError,form
 # from flask_wtf.csrf import CSRFProtect
 
 
@@ -64,12 +64,12 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         pass
-    # if request.method == 'POST':
-    #      email = StringField('inputEmail')
-    #      password = PasswordField('inputPassword')
-        return render_template("home.html",current_year=current_year)
-    else:
-        return render_template("login.html",current_year=current_year,form=form)
+    # # if request.method == 'POST':
+    # #      email = StringField('inputEmail')
+    # #      password = PasswordField('inputPassword')
+    #     return render_template("home.html",current_year=current_year)
+    # else:
+    return render_template("login.html",current_year=current_year,form=form)
 
 
 
