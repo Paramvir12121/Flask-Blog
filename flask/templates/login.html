@@ -11,10 +11,10 @@
             <form action="{{url_for('login')}}" method="post" novalidate>
               <div class="py-3">
               {{ form.csrf_token }}
-              {{ form.username.label }}<br/> {{ form.username(size=40) }}
-              {% if form.username.errors %}
+              {{ form.email.label }}<br/> {{ form.email(size=40) }}
+              {% if form.email.errors %}
                 <div class="alert alert-warning py-1 my-1">
-                  {% for error in form.username.errors %}
+                  {% for error in form.email.errors %}
                     <p>{{ error }}</p>
                   {% endfor %}</div>
               {% endif %}

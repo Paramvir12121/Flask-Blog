@@ -3,19 +3,33 @@ from flask import request
 import random, time, requests
 
 from flask_wtf import FlaskForm
-from wtforms.validators import DataRequired
-from wtforms import StringField, PasswordField,SubmitField
+from wtforms.validators import DataRequired,Email
+from wtforms import StringField, PasswordField,SubmitField,ValidationError
 # from flask_wtf.csrf import CSRFProtect
 
 
 
+def length(min=-1, max=-1):
+    message = 'Must be between %d and %d characters long.' % (min, max)
+
+    def _length(form, field):
+        l = field.data and len(field.data) or 0
+        if l < min or max != -1 and l > max:
+            raise ValidationError(message)
+
+    return _length
+
+
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
+    email = StringField('Email', validators=[Email()])
+    password = PasswordField('Password', validators=[DataRequired(), length(min=8,max=50)])
     submit = SubmitField('Log In')
 
 current_year = time.localtime().tm_year
 print(current_year)
+
+
+
 
 
 app = Flask(__name__)
