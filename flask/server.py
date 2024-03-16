@@ -26,6 +26,11 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), length(min=8,max=50)])
     submit = SubmitField('Log In')
 
+class PostForm(FlaskForm):
+    poster = StringField('Poster', validators=[DataRequired()])
+    password = StringField("What's on your mind!",validators=[DataRequired(), length(min=1,max=500)])
+    submit = SubmitField('Post')
+
 current_year = time.localtime().tm_year
 print(current_year)
 
@@ -64,19 +69,16 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         pass
-    # # if request.method == 'POST':
-    # #      email = StringField('inputEmail')
-    # #      password = PasswordField('inputPassword')
-    #     return render_template("home.html",current_year=current_year)
-    # else:
     return render_template("login.html",current_year=current_year,form=form)
 
+@app.route("/post",methods=[ "GET","POST"] )
+def post():
+    form = PostForm()
+    if form.validate_on_submit():
+        return render_template("home.html",current_year=current_year)
+    else:
+        return render_template("login.html",current_year=current_year,form=form)
 
 
-
-
-
-# to run whithout using cmd >flask --app <filename> run 
-# Allows to just use python hello.py
 if __name__ == "__main__":
     app.run(debug=True, host="localhost", port="5000")
