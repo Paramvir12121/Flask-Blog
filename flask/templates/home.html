@@ -8,26 +8,27 @@
   </main>
 </div>
 <div class="p-5 m-2 row">
-  <div class="col-3"></div>
+  <div class="col-2"></div>
 
-    <div class="col-6">
-      <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasLabel">Offcanvas</h5>
-      </div>
-      <div class="offcanvas-body">
-         Content for the offcanvas goes here. You can place just about any Bootstrap component or custom elements here.
-      </div>
-      <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasLabel">Offcanvas</h5>
-      </div>
-      <div class="offcanvas-body">
-         Content for the offcanvas goes here. You can place just about any Bootstrap component or custom elements here.
-      </div>
+  
+      <div class="col-8">
+        {% for post in posts %}
+        <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+          <div class="col p-4 d-flex flex-column position-static">
+            <strong class="d-inline-block mb-2 text-primary-emphasis">{{ post.poster}}</strong>
+            <h3 class="mb-0">{{ post.topic}}</h3>
+            <div class="mb-1 text-body-secondary">{{ post.post_date}}</div>
+            <p class="card-text mb-auto">{{post.user_post}}</p>
+          </div>
+        </div>
       
-    </div>
+  {% endfor %}   
+</div> 
+      
+    
 
 
-  <div class="col-3"></div>
+  <div class="col-2"></div>
   
 </div>
 
