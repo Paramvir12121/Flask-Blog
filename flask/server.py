@@ -2,6 +2,7 @@ from flask import Flask,render_template,redirect,url_for
 from flask import request
 import random, time, requests
 from datetime import date
+import sqlite3
 
 from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
@@ -9,8 +10,12 @@ from wtforms.validators import DataRequired,Email
 from wtforms import StringField, PasswordField,SubmitField,ValidationError,form
 # from flask_wtf.csrf import CSRFProtect
 
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import Integer, String, Float
 
 
+######################## Flask Form ################################
 def length(min=-1, max=-1):
     message = 'Must be between %d and %d characters long.' % (min, max)
 
@@ -36,7 +41,28 @@ class PostForm(FlaskForm):
 current_year = time.localtime().tm_year
 print(current_year)
 
+################################### Database ###############################
 posts = []
+
+# db = sqlite3.connect("posts.db")
+# cursor = db.cursor()
+
+# sql = '''CREATE TABLE IF NOT EXISTS posts (
+#             post_id INTEGER PRIMARY KEY,
+#             poster TEXT NOT NULL,
+#             topic TEXT NOT NULL,
+#             post_date DATE NOT NULL,
+#             user_post TEXT NOT NULL
+#          )'''
+
+# cursor.execute(sql)
+# # Commit your changes in the database
+# db.commit()
+
+# # Close the connection
+# db.close()
+
+
 
 
 
