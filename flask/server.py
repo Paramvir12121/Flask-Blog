@@ -44,6 +44,8 @@ print(current_year)
 ################################### Database ###############################
 posts = []
 
+
+
 # db = sqlite3.connect("posts.db")
 # cursor = db.cursor()
 
@@ -117,7 +119,7 @@ def post():
         print(post_data)
         return redirect(url_for('home'))
     else:
-        return render_template("login.html",current_year=current_year,form=form)
+        return render_template("post.html",current_year=current_year,form=form)
 
 
 if __name__ == "__main__":
