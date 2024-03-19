@@ -12,7 +12,7 @@ from wtforms import StringField, PasswordField,SubmitField,ValidationError,form
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Float
+from sqlalchemy import Integer, String, Float, create_engine
 
 
 ######################## Flask Form ################################
@@ -44,27 +44,45 @@ print(current_year)
 ################################### Database ###############################
 posts = []
 
+# # Create an engine that stores data in the local directory's posts.db file.
+# engine = create_engine('sqlite:///posts.db')
+
+# # Declare a base class for your models
+# Base = declarative_base()
 
 
-# db = sqlite3.connect("posts.db")
-# cursor = db.cursor()
+# class Post(Base):
+#     __tablename__ = 'posts'
+#     post_id = Column(Integer, primary_key=True)
+#     poster = Column(String)
+#     topic = Column(String)
+#     post_date = Column(Date, default=date.today)
+#     user_post = Column(String)
 
-# sql = '''CREATE TABLE IF NOT EXISTS posts (
-#             post_id INTEGER PRIMARY KEY,
-#             poster TEXT NOT NULL,
-#             topic TEXT NOT NULL,
-#             post_date DATE NOT NULL,
-#             user_post TEXT NOT NULL
-#          )'''
+# Base.metadata.create_all(engine)
 
-# cursor.execute(sql)
-# # Commit your changes in the database
-# db.commit()
+# Session = sessionmaker(bind=engine)
 
-# # Close the connection
-# db.close()
+# def add_post(poster, topic, user_post):
+#     session = Session()
+#     new_post = Post(poster=poster, topic=topic, user_post=user_post)
+#     session.add(new_post)
+#     session.commit()
+#     session.close()
 
+# def get_all_posts():
+#     session = Session()
+#     posts = session.query(Post).all()
+#     session.close()
+#     return posts
 
+# # Add a new post
+# add_post("Jane Doe", "Simplifying SQLAlchemy", "It's easier than you think!")
+
+# # Retrieve all posts
+# posts = get_all_posts()
+# for post in posts:
+#     print(f"Poster: {post.poster}, Topic: {post.topic}, Post: {post.user_post}")
 
 
 
