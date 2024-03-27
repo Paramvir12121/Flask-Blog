@@ -132,7 +132,7 @@ def signup():
         password = request.form['password']
         password_hash = password #add hash process here 
         password_salt = "P@ssW0RdS@1t" # generate password salt here 
-        new_user = User(username=username, password_hash=password_hash, password_salt=password_salt)
+        new_user = User(username=username,email=email, password_hash=password_hash, password_salt=password_salt)
         db.session.add(new_user)
         db.session.commit()
     return render_template("signup.html",current_year=current_year,form=form)
