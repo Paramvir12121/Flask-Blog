@@ -34,7 +34,7 @@ class LoginForm(FlaskForm):
 
 class SignupForm(FlaskForm):
     #Need to add validator to check if there use user with similar username or email.
-    username = StringField('Email', validators=[DataRequired()])  
+    username = StringField('Username', validators=[DataRequired()])  
     email = StringField('Email', validators=[Email()])
     password = PasswordField('Password', validators=[DataRequired(), length(min=8,max=50)])
     submit = SubmitField('Sign Up')
@@ -57,7 +57,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Change to your secret key
 # This is the SQLite URI format. `./example.db` specifies the path to your database file.
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///./example.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 bootstrap = Bootstrap5(app)
     # csrf = CSRFProtect(app)  # might not be needed, look into documentation
@@ -86,13 +86,13 @@ class UserPost(db.Model):
 
     def __repr__(self):
         return '<Post %r>' % self.content
-    
+
+with app.app_context():
+    db.create_all() 
 
 ################################### ROUTES  ################################
     
-@app.before_first_request
-def create_tables():
-    db.create_all()
+
 
 @app.route("/")
 def home():
