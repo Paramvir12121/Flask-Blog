@@ -32,6 +32,14 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), length(min=8,max=50)])
     submit = SubmitField('Log In')
 
+class SignupForm(FlaskForm):
+    #Need to add validator to check if there use user with similar username or email.
+    username = StringField('Email', validators=[DataRequired()])  
+    email = StringField('Email', validators=[Email()])
+    password = PasswordField('Password', validators=[DataRequired(), length(min=8,max=50)])
+    submit = SubmitField('Sign Up')
+
+
 class PostForm(FlaskForm):
     poster = StringField('Poster', validators=[DataRequired()])
     topic = StringField('Topic', validators=[DataRequired()])
@@ -41,58 +49,50 @@ class PostForm(FlaskForm):
 current_year = time.localtime().tm_year
 print(current_year)
 
-################################### Database ###############################
-posts = []
-
-# # Create an engine that stores data in the local directory's posts.db file.
-# engine = create_engine('sqlite:///posts.db')
-
-# # Declare a base class for your models
-# Base = declarative_base()
-
-
-# class Post(Base):
-#     __tablename__ = 'posts'
-#     post_id = Column(Integer, primary_key=True)
-#     poster = Column(String)
-#     topic = Column(String)
-#     post_date = Column(Date, default=date.today)
-#     user_post = Column(String)
-
-# Base.metadata.create_all(engine)
-
-# Session = sessionmaker(bind=engine)
-
-# def add_post(poster, topic, user_post):
-#     session = Session()
-#     new_post = Post(poster=poster, topic=topic, user_post=user_post)
-#     session.add(new_post)
-#     session.commit()
-#     session.close()
-
-# def get_all_posts():
-#     session = Session()
-#     posts = session.query(Post).all()
-#     session.close()
-#     return posts
-
-# # Add a new post
-# add_post("Jane Doe", "Simplifying SQLAlchemy", "It's easier than you think!")
-
-# # Retrieve all posts
-# posts = get_all_posts()
-# for post in posts:
-#     print(f"Poster: {post.poster}, Topic: {post.topic}, Post: {post.user_post}")
-
 
 
 
 #################################### Flask APP #########################################
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Change to your secret key
+# This is the SQLite URI format. `./example.db` specifies the path to your database file.
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///./example.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 bootstrap = Bootstrap5(app)
     # csrf = CSRFProtect(app)  # might not be needed, look into documentation
 
+
+################################### Database ###############################
+posts = []
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    password_salt = db.Column(db.String(128), nullable=False)
+
+    # Relationship to UserPost
+    posts = db.relationship('UserPost', backref='author', lazy='dynamic')
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
+class UserPost(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return '<Post %r>' % self.content
+    
+
+################################### ROUTES  ################################
+    
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 @app.route("/")
 def home():
@@ -122,6 +122,21 @@ def login():
     if form.validate_on_submit():
         pass
     return render_template("login.html",current_year=current_year,form=form)
+
+@app.route("/signup",methods=[ "GET","POST"] )
+def signup():
+    form = SignupForm()
+    if form.validate_on_submit():
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        password_hash = password #add hash process here 
+        password_salt = "P@ssW0RdS@1t" # generate password salt here 
+        new_user = User(username=username, password_hash=password_hash, password_salt=password_salt)
+        db.session.add(new_user)
+        db.session.commit()
+    return render_template("signup.html",current_year=current_year,form=form)
+
 
 @app.route("/post",methods=[ "GET","POST"] )
 def post():
