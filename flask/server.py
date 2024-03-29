@@ -50,15 +50,21 @@ current_year = time.localtime().tm_year
 print(current_year)
 
 
+# As of flask-sqlalchemy version 3.1, you need to pass a subclass of DeclarativeBase to the constructor of the database.
+class Base(DeclarativeBase):
+    pass
+
 
 
 #################################### Flask APP #########################################
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Change to your secret key
+
 # This is the SQLite URI format. `./example.db` specifies the path to your database file.
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///./example.db'
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///blog_db.db"
+db = SQLAlchemy(model_class=Base)
+db.init_app(app)
+
 bootstrap = Bootstrap5(app)
     # csrf = CSRFProtect(app)  # might not be needed, look into documentation
 
@@ -67,7 +73,7 @@ bootstrap = Bootstrap5(app)
 posts = []
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
@@ -80,9 +86,9 @@ class User(db.Model):
         return '<User %r>' % self.username
 
 class UserPost(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
 
     def __repr__(self):
         return '<Post %r>' % self.content
@@ -132,10 +138,13 @@ def signup():
         password = request.form['password']
         password_hash = password #add hash process here 
         password_salt = "P@ssW0RdS@1t" # generate password salt here 
-        new_user = User(username=username,email=email, password_hash=password_hash, password_salt=password_salt)
-        db.session.add(new_user)
-        db.session.commit()
-    return render_template("signup.html",current_year=current_year,form=form)
+        with app.app_context():
+            new_user = User(username=username,email=email, password_hash=password_hash, password_salt=password_salt)
+            db.session.add(new_user)
+            db.session.commit()
+        return redirect(url_for('home'))
+    else:
+        return render_template("signup.html",current_year=current_year,form=form)
 
 
 @app.route("/post",methods=[ "GET","POST"] )
