@@ -1,7 +1,7 @@
 from flask import Flask,render_template,redirect,url_for
 from flask import request
-import random, time, requests
-from datetime import date
+import random, time, requests,datetime
+from datetime import datetime
 import sqlite3
 
 from flask_wtf import FlaskForm
@@ -92,6 +92,17 @@ class UserPost(db.Model):
 
     def __repr__(self):
         return '<Post %r>' % self.content
+    
+class Contact_message(db.Model):
+    contact_msg_id = db.Column(db.Integer, primary_key=True)
+    sender_name = db.Column(db.Text, nullable=False)
+    sender_email = db.Column(db.Text, nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    message_recieve_time = db.Column(db.DateTime, default=datetime.utcnow())
+    
+
+    def __repr__(self):
+        return '<contact %r>' % self.content
 
 with app.app_context():
     db.create_all() 
@@ -115,6 +126,12 @@ def contact():
         sender_name = request.form['name']
         sender_email = request.form['email']
         message = request.form['message']
+        
+        new_message = Contact_message(message=message, sender_email=sender_email, sender_name=sender_name)
+        db.session.add(new_message)
+        db.session.commit()
+
+
         with open('messages.txt', 'a') as file:  # Open the text file in append mode
             file.write(f"from:{sender_name}\nemail:{sender_email}\n{message}\n\n")  # Write the message to the file with a newline
         return render_template("home.html",current_year=current_year)
