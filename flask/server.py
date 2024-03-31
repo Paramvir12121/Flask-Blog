@@ -1,8 +1,9 @@
 from flask import Flask,render_template,redirect,url_for
-from flask import request
+from flask import request, session
 import random, time, requests,datetime
 from datetime import datetime
 import sqlite3
+from functools import wraps
 
 from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
@@ -69,6 +70,17 @@ bootstrap = Bootstrap5(app)
     # csrf = CSRFProtect(app)  # might not be needed, look into documentation
 
 
+
+# for login - in progress
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            # Redirect to login page if user_id is not in session
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 ################################### Database ###############################
 posts = []
 
@@ -89,6 +101,7 @@ class UserPost(db.Model):
     post_id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+    
 
     def __repr__(self):
         return '<Post %r>' % self.content
@@ -144,6 +157,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         pass
+        
     return render_template("login.html",current_year=current_year,form=form)
 
 @app.route("/signup",methods=[ "GET","POST"] )
@@ -163,7 +177,7 @@ def signup():
     else:
         return render_template("signup.html",current_year=current_year,form=form)
 
-
+@login_required
 @app.route("/post",methods=[ "GET","POST"] )
 def post():
     form = PostForm()
@@ -171,7 +185,7 @@ def post():
         post_data = {
             "poster": form.poster.data,
             "topic": form.topic.data,
-            "post_date": date.today(),
+            "post_date": datetime.today(),
             "user_post": form.user_post.data 
         }
         posts.append(post_data)
@@ -179,6 +193,12 @@ def post():
         return redirect(url_for('home'))
     else:
         return render_template("post.html",current_year=current_year,form=form)
+    
+@login_required
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)  # Remove the user_id from the session
+    return redirect(url_for('home'))  # Redirect to the homepage or login page
 
 
 if __name__ == "__main__":
