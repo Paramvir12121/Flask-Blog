@@ -8,7 +8,7 @@ from functools import wraps
 from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
 from wtforms.validators import DataRequired,Email
-from wtforms import StringField, PasswordField,SubmitField,ValidationError,form
+from wtforms import StringField, PasswordField,SubmitField,ValidationError,form,InputRequired,Regexp
 # from flask_wtf.csrf import CSRFProtect
 
 from flask_sqlalchemy import SQLAlchemy
@@ -35,7 +35,17 @@ class LoginForm(FlaskForm):
 
 class SignupForm(FlaskForm):
     #Need to add validator to check if there use user with similar username or email.
-    username = StringField('Username', validators=[DataRequired()])  
+    username = StringField(
+        validators=[
+            InputRequired(),
+            length(3, 20),
+            Regexp(
+                "^[A-Za-z][A-Za-z0-9_.]*$",
+                0,
+                "Usernames must have only letters, " "numbers, dots or underscores",
+            ),
+        ]
+    )  
     email = StringField('Email', validators=[Email()])
     password = PasswordField('Password', validators=[DataRequired(), length(min=8,max=50)])
     submit = SubmitField('Sign Up')
