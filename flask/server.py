@@ -27,8 +27,6 @@ from flask_cognito import cognito_auth_required
 import boto3
 from botocore.exceptions import ClientError
 
-
-
 ######################## Flask Form ################################
 def length(min=-1, max=-1):
     message = 'Must be between %d and %d characters long.' % (min, max)
@@ -78,8 +76,6 @@ print(current_year)
 class Base(DeclarativeBase):
     pass
 
-
-
 #################################### Flask APP #########################################
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Change to your secret key
@@ -91,6 +87,13 @@ db.init_app(app)
 
 bootstrap = Bootstrap5(app)
     # csrf = CSRFProtect(app)  # might not be needed, look into documentation
+app.config['COGNITO_REGION'] = os.getenv('COGNITO_REGION')  # e.g., us-east-1
+app.config['COGNITO_USERPOOL_ID'] = os.getenv('USER_POOL_ID')
+app.config['COGNITO_APP_CLIENT_ID'] = os.getenv('APP_CLIENT_ID')
+app.config['COGNITO_CHECK_TOKEN_EXPIRATION'] = False  # Set as per your preference
+
+cognito = CognitoAuth(app)
+
 
 # AWS Cognito credentials
 USER_POOL_ID = os.getenv('USER_POOL_ID')
@@ -99,26 +102,36 @@ REGION = os.getenv('COGNITO_REGION')
 
 client = boto3.client('cognito-idp', region_name=REGION)
 
-# app.config['COGNITO_REGION'] = os.getenv('COGNITO_REGION')
-# app.config['COGNITO_USERPOOL_ID'] = os.getenv('USER_POOL_ID')
-# app.config['COGNITO_APP_CLIENT_ID'] = os.getenv('APP_CLIENT_ID')
-# app.config['COGNITO_DOMAIN'] = os.getenv('COGNITO_DOMAIN')
-# app.config['COGNITO_REDIRECT_URI'] = os.getenv('REDIRECT_URI')
-# cognito = CognitoAuth(app)
-
-
-def sign_in(username, password):
+def sign_in(email, password):
     try:
         resp = client.initiate_auth(
             ClientId=CLIENT_ID,
             AuthFlow='USER_PASSWORD_AUTH',
             AuthParameters={
-                'USERNAME': username,
+                'USERNAME': email,
                 'PASSWORD': password
             }
         )
         return resp
     except ClientError as e:
+        print("Error during sign in:", e.response['Error']['Message'])
+        return None
+    
+def respond_to_new_password_challenge(username, session, new_password):
+    try:
+        # The response to the authentication challenge
+        response = client.respond_to_auth_challenge(
+            ClientId=CLIENT_ID,
+            ChallengeName='NEW_PASSWORD_REQUIRED',
+            Session=session,
+            ChallengeResponses={
+                'USERNAME': username,
+                'NEW_PASSWORD': new_password,
+            }
+        )
+        return response
+    except ClientError as e:
+        print("Error responding to new password challenge:", e.response['Error']['Message'])
         return None
 
 
@@ -179,8 +192,6 @@ with app.app_context():
 def home():
     return render_template("home.html",posts=posts)
 
-
-
 @app.route('/secure_area')
 @cognito_auth_required
 def secure_area():
@@ -210,6 +221,9 @@ def contact():
     else:
         return render_template("contact.html")
 
+print("User Pool ID:", USER_POOL_ID)
+print("Client ID:", CLIENT_ID)
+print("Region:", REGION)
 
 @app.route('/awslogin', methods=['GET', 'POST'])
 def login():
@@ -217,14 +231,35 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        print("Email:", email)
+        print("Password:", password)
         auth_response = sign_in(email, password)
+        print("auth response: ", auth_response)
+        if auth_response and 'ChallengeName' in auth_response and auth_response['ChallengeName'] == 'NEW_PASSWORD_REQUIRED':
+            session['username'] = email  # Store username temporarily
+            session['session'] = auth_response['Session']  # Store the session token temporarily
+            return redirect(url_for('new_password'))  # Redirect to the new password page
         if auth_response and 'AuthenticationResult' in auth_response:
             session['email'] = email
             session['access_token'] = auth_response['AuthenticationResult']['AccessToken']
             return redirect(url_for('home'))
         else:
+            print("AWS Cognito Error:", ClientError)
             return 'Login failed', 401
     return render_template('login.html',form=form)
+
+@app.route('/new_password', methods=['GET', 'POST'])
+def new_password():
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+        username = session.get('username')
+        session_token = session.get('session')
+        response = respond_to_new_password_challenge(username, session_token, new_password)
+        if response and 'AuthenticationResult' in response:
+            return redirect(url_for('home'))
+        else:
+            return 'Failed to update password', 400
+    return render_template('new_password.html')  # Render a template for new password input
 
 @app.route('/awslogout')
 def logout():
@@ -232,32 +267,6 @@ def logout():
     session.pop('access_token', None)
     return redirect(url_for('home'))
 
-
-# @app.route('/awslogin')
-# def login():
-#     domain = app.config['COGNITO_DOMAIN']
-#     client_id = app.config['COGNITO_APP_CLIENT_ID']
-#     redirect_uri = app.config['COGNITO_REDIRECT_URI']
-#     response_type = 'code'  # or 'token', depending on the OAuth flow you want to use
-
-#     # The URL to the login page hosted by Cognito
-#     cognito_login_url = f"https://{domain}/login?response_type={response_type}&client_id={client_id}&redirect_uri={redirect_uri}"
-
-#     return redirect(cognito_login_url)
-
-# @app.route('/awslogout')
-# def logout():
-#     return redirect(cognito.get_sign_out_url())
-
-
-
-# @app.route("/login",methods=[ "GET","POST"] )
-# def login():
-#     form = LoginForm()
-#     if form.validate_on_submit():
-#         pass
-        
-#     return render_template("login.html",form=form)
 
 # @app.route("/signup",methods=[ "GET","POST"] )
 # def signup():
@@ -293,12 +302,6 @@ def post():
     else:
         return render_template("post.html",form=form)
     
-# @login_required
-# @app.route('/logout')
-# def logout():
-#     session.pop('user_id', None)  # Remove the user_id from the session
-#     return redirect(url_for('home'))  # Redirect to the homepage or login page
-
 
 if __name__ == "__main__":
     app.run(debug=True, host="localhost", port="5000")
