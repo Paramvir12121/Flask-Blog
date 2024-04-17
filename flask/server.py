@@ -7,13 +7,26 @@ from functools import wraps
 
 from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
-from wtforms.validators import DataRequired,Email
-from wtforms import StringField, PasswordField,SubmitField,ValidationError,form,InputRequired,Regexp
+from wtforms import StringField, PasswordField, SubmitField, ValidationError, Form
+from wtforms.validators import DataRequired, Email, InputRequired, Regexp
+
 # from flask_wtf.csrf import CSRFProtect
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Float, create_engine
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+###########################Cognito Config############################
+from flask_cognito import CognitoAuth
+from flask_cognito import cognito_auth_required
+import boto3
+from botocore.exceptions import ClientError
+
 
 
 ######################## Flask Form ################################
@@ -79,6 +92,34 @@ db.init_app(app)
 bootstrap = Bootstrap5(app)
     # csrf = CSRFProtect(app)  # might not be needed, look into documentation
 
+# AWS Cognito credentials
+USER_POOL_ID = os.getenv('USER_POOL_ID')
+CLIENT_ID = os.getenv('APP_CLIENT_ID')
+REGION = os.getenv('COGNITO_REGION')
+
+client = boto3.client('cognito-idp', region_name=REGION)
+
+# app.config['COGNITO_REGION'] = os.getenv('COGNITO_REGION')
+# app.config['COGNITO_USERPOOL_ID'] = os.getenv('USER_POOL_ID')
+# app.config['COGNITO_APP_CLIENT_ID'] = os.getenv('APP_CLIENT_ID')
+# app.config['COGNITO_DOMAIN'] = os.getenv('COGNITO_DOMAIN')
+# app.config['COGNITO_REDIRECT_URI'] = os.getenv('REDIRECT_URI')
+# cognito = CognitoAuth(app)
+
+
+def sign_in(username, password):
+    try:
+        resp = client.initiate_auth(
+            ClientId=CLIENT_ID,
+            AuthFlow='USER_PASSWORD_AUTH',
+            AuthParameters={
+                'USERNAME': username,
+                'PASSWORD': password
+            }
+        )
+        return resp
+    except ClientError as e:
+        return None
 
 
 # for login - in progress
@@ -136,11 +177,19 @@ with app.app_context():
 
 @app.route("/")
 def home():
-    return render_template("home.html",current_year=current_year,posts=posts)
+    return render_template("home.html",posts=posts)
+
+
+
+@app.route('/secure_area')
+@cognito_auth_required
+def secure_area():
+    return 'Only logged in users can see this'
+
 
 @app.route("/about")
 def about():
-    return render_template("about.html",current_year=current_year)
+    return render_template("about.html")
 
 
 @app.route("/contact",methods=[ "GET","POST"])
@@ -157,35 +206,75 @@ def contact():
 
         with open('messages.txt', 'a') as file:  # Open the text file in append mode
             file.write(f"from:{sender_name}\nemail:{sender_email}\n{message}\n\n")  # Write the message to the file with a newline
-        return render_template("home.html",current_year=current_year)
+        return render_template("home.html")
     else:
-        return render_template("contact.html",current_year=current_year)
+        return render_template("contact.html")
 
 
-@app.route("/login",methods=[ "GET","POST"] )
+@app.route('/awslogin', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    if form.validate_on_submit():
-        pass
-        
-    return render_template("login.html",current_year=current_year,form=form)
-
-@app.route("/signup",methods=[ "GET","POST"] )
-def signup():
-    form = SignupForm()
-    if form.validate_on_submit():
-        username = request.form['username']
+    if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        password_hash = password #add hash process here 
-        password_salt = "P@ssW0RdS@1t" # generate password salt here 
-        with app.app_context():
-            new_user = User(username=username,email=email, password_hash=password_hash, password_salt=password_salt)
-            db.session.add(new_user)
-            db.session.commit()
-        return redirect(url_for('home'))
-    else:
-        return render_template("signup.html",current_year=current_year,form=form)
+        auth_response = sign_in(email, password)
+        if auth_response and 'AuthenticationResult' in auth_response:
+            session['email'] = email
+            session['access_token'] = auth_response['AuthenticationResult']['AccessToken']
+            return redirect(url_for('home'))
+        else:
+            return 'Login failed', 401
+    return render_template('login.html',form=form)
+
+@app.route('/awslogout')
+def logout():
+    session.pop('email', None)
+    session.pop('access_token', None)
+    return redirect(url_for('home'))
+
+
+# @app.route('/awslogin')
+# def login():
+#     domain = app.config['COGNITO_DOMAIN']
+#     client_id = app.config['COGNITO_APP_CLIENT_ID']
+#     redirect_uri = app.config['COGNITO_REDIRECT_URI']
+#     response_type = 'code'  # or 'token', depending on the OAuth flow you want to use
+
+#     # The URL to the login page hosted by Cognito
+#     cognito_login_url = f"https://{domain}/login?response_type={response_type}&client_id={client_id}&redirect_uri={redirect_uri}"
+
+#     return redirect(cognito_login_url)
+
+# @app.route('/awslogout')
+# def logout():
+#     return redirect(cognito.get_sign_out_url())
+
+
+
+# @app.route("/login",methods=[ "GET","POST"] )
+# def login():
+#     form = LoginForm()
+#     if form.validate_on_submit():
+#         pass
+        
+#     return render_template("login.html",form=form)
+
+# @app.route("/signup",methods=[ "GET","POST"] )
+# def signup():
+#     form = SignupForm()
+#     if form.validate_on_submit():
+#         username = request.form['username']
+#         email = request.form['email']
+#         password = request.form['password']
+#         password_hash = password #add hash process here 
+#         password_salt = "P@ssW0RdS@1t" # generate password salt here 
+#         with app.app_context():
+#             new_user = User(username=username,email=email, password_hash=password_hash, password_salt=password_salt)
+#             db.session.add(new_user)
+#             db.session.commit()
+#         return redirect(url_for('home'))
+#     else:
+#         return render_template("signup.html",form=form)
 
 @login_required
 @app.route("/post",methods=[ "GET","POST"] )
@@ -202,13 +291,13 @@ def post():
         print(post_data)
         return redirect(url_for('home'))
     else:
-        return render_template("post.html",current_year=current_year,form=form)
+        return render_template("post.html",form=form)
     
-@login_required
-@app.route('/logout')
-def logout():
-    session.pop('user_id', None)  # Remove the user_id from the session
-    return redirect(url_for('home'))  # Redirect to the homepage or login page
+# @login_required
+# @app.route('/logout')
+# def logout():
+#     session.pop('user_id', None)  # Remove the user_id from the session
+#     return redirect(url_for('home'))  # Redirect to the homepage or login page
 
 
 if __name__ == "__main__":
