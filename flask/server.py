@@ -61,12 +61,17 @@ class SignupForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), length(min=8,max=50)])
     submit = SubmitField('Sign Up')
 
-
 class PostForm(FlaskForm):
     poster = StringField('Poster', validators=[DataRequired()])
     topic = StringField('Topic', validators=[DataRequired()])
     user_post = StringField("What's on your mind!",validators=[DataRequired(), length(min=1,max=500)])
     submit = SubmitField('Post')
+
+class NewPassword(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired(), length(min=8,max=50)])
+    submit = SubmitField('Sign Up')
+
+
 
 current_year = time.localtime().tm_year
 print(current_year)
