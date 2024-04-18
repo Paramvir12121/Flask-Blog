@@ -25,7 +25,7 @@ load_dotenv()
 from flask_cognito import CognitoAuth
 from flask_cognito import cognito_auth_required
 import boto3
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError, PartialCredentialsError, EndpointConnectionError
 
 ######################## Flask Form ################################
 def length(min=-1, max=-1):
@@ -70,8 +70,6 @@ class PostForm(FlaskForm):
 class NewPassword(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), length(min=8,max=50)])
     submit = SubmitField('Sign Up')
-
-
 
 current_year = time.localtime().tm_year
 print(current_year)
@@ -119,12 +117,25 @@ def sign_in(email, password):
         )
         return resp
     except ClientError as e:
-        print("Error during sign in:", e.response['Error']['Message'])
+        # Specific error handling based on error code
+        error_code = e.response['Error']['Code']
+        if error_code in ['NotAuthorizedException', 'UserNotFoundException']:
+            print(f"Authentication failed: {e.response['Error']['Message']}")
+        else:
+            print(f"Unexpected error: {e.response['Error']['Message']}")
+        return None
+    except (NoCredentialsError, PartialCredentialsError):
+        print("Credentials are not available or incomplete.")
+        return None
+    except EndpointConnectionError:
+        print("Network issues, unable to connect to Cognito endpoint.")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
         return None
     
 def respond_to_new_password_challenge(username, session, new_password):
     try:
-        # The response to the authentication challenge
         response = client.respond_to_auth_challenge(
             ClientId=CLIENT_ID,
             ChallengeName='NEW_PASSWORD_REQUIRED',
@@ -136,18 +147,50 @@ def respond_to_new_password_challenge(username, session, new_password):
         )
         return response
     except ClientError as e:
-        print("Error responding to new password challenge:", e.response['Error']['Message'])
+        error_code = e.response['Error']['Code']
+        if error_code == 'ExpiredCodeException':
+            print("Session token expired. Please re-authenticate.")
+        else:
+            print(f"Error during password reset: {e.response['Error']['Message']}")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred during password challenge: {str(e)}")
         return None
 
 
 # for login - in progress
-def login_required(f):
+def cognito_login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            # Redirect to login page if user_id is not in session
+        # Check if the session contains Cognito tokens
+        access_token = session.get('access_token')
+        if not access_token:
+            # No token, redirect to login
             return redirect(url_for('login'))
+
+        # Create a Cognito identity provider client
+        client = boto3.client('cognito-idp', region_name=REGION)
+        
+        try:
+            # Attempt to get user data to validate the current token
+            response = client.get_user(
+                AccessToken=access_token
+            )
+            # Optionally, refresh token logic here if the token is about to expire
+        except client.exceptions.NotAuthorizedException:
+            # Token is not valid or expired, redirect to login
+            return redirect(url_for('login'))
+        except client.exceptions.UserNotFoundException:
+            # User does not exist, handle accordingly
+            return redirect(url_for('login'))
+        except Exception as e:
+            # Handle other possible exceptions
+            print(f"Error verifying Cognito access token: {str(e)}")
+            return redirect(url_for('login'))
+        
+        # If everything is fine, proceed to the protected route
         return f(*args, **kwargs)
+
     return decorated_function
 
 ################################### Database ###############################
