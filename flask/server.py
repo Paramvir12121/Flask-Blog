@@ -235,13 +235,13 @@ with app.app_context():
 ################################### ROUTES  ################################
     
 
-
+@cognito_login_required
 @app.route("/")
 def home():
     return render_template("home.html",posts=posts)
 
+
 @app.route('/secure_area')
-@cognito_auth_required
 def secure_area():
     return 'Only logged in users can see this'
 
