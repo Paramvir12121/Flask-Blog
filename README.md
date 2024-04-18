@@ -72,33 +72,24 @@ Set environment variables for AWS Cognito in your .env file:
 python flask/server.py
 ```
 ## Dependencies
-All dependencies are listed in requirements.txt. 
-Flask
-Usage in Codebase: Flask is used as the core framework for your web application. It is responsible for creating the app instance, defining routes, and handling requests. For instance, app = Flask(__name__) initializes the Flask application, and the decorators @app.route are used to map URLs to Python functions.
+All dependencies are listed in requirements.txt. Major Dependencies are:
+Flask: Flask is used as the core framework for your web application. It is responsible for creating the app instance, defining routes, and handling requests. For instance, app = Flask(__name__) initializes the Flask application, and the decorators @app.route are used to map URLs to Python functions.
 
-Flask-WTF
-Usage in Codebase: This extension is utilized for handling forms. You use FlaskForm to define forms such as LoginForm, SignupForm, and PostForm. These forms handle user input for authentication, signing up, and posting messages. It integrates seamlessly with your templates to validate user input against specified criteria.
+Flask-WTF: This extension is utilized for handling forms. You use FlaskForm to define forms such as LoginForm, SignupForm, and PostForm. These forms handle user input for authentication, signing up, and posting messages. It integrates seamlessly with your templates to validate user input against specified criteria.
 
-- Flask-SQLAlchemy
- This is used to interact with the SQLite database. It manages the creation of database models and handles all database transactions. For example, db = SQLAlchemy(model_class=Base) initializes the SQLAlchemy object, and models like User and UserPost inherit from db.Model, making them part of the ORM.
+- Flask-SQLAlchemy: This is used to interact with the SQLite database. It manages the creation of database models and handles all database transactions. For example, db = SQLAlchemy(model_class=Base) initializes the SQLAlchemy object, and models like User and UserPost inherit from db.Model, making them part of the ORM.
 
-- Flask-Bootstrap
-Usage in Codebase: Flask-Bootstrap is used to integrate Bootstrap into Flask easily. It is initialized with bootstrap = Bootstrap5(app), which enables Bootstrap templates and forms to render with Bootstrap styling by default, enhancing the UI design and responsiveness without additional CSS.
+- Flask-Bootstrap: Flask-Bootstrap is used to integrate Bootstrap into Flask easily. It is initialized with bootstrap = Bootstrap5(app), which enables Bootstrap templates and forms to render with Bootstrap styling by default, enhancing the UI design and responsiveness without additional CSS.
 
-- Boto3
-Usage in Codebase: Boto3 is the AWS SDK used primarily for AWS Cognito authentication. Functions like sign_in utilize Boto3 to interact with AWS Cognito services, handling user authentication processes such as signing in and responding to authentication challenges.
+- Boto3: Boto3 is the AWS SDK used primarily for AWS Cognito authentication. Functions like sign_in utilize Boto3 to interact with AWS Cognito services, handling user authentication processes such as signing in and responding to authentication challenges.
 
-- python-dotenv
-Usage in Codebase: Used to load environment variables from a .env file at the start of your application with load_dotenv(). This approach is used to manage sensitive information such as AWS access keys and your Flask application's secret key without hardcoding them into the source code.
+- python-dotenv: Used to load environment variables from a .env file at the start of your application with load_dotenv(). This approach is used to manage sensitive information such as AWS access keys and your Flask application's secret key without hardcoding them into the source code.
 
-- Flask-Cognito
-Usage in Codebase: This extension enables your application to use AWS Cognito for user authentication. It helps manage session tokens and user authentication states with decorators like @cognito_auth_required, which you use to protect routes that require a user to be logged in.
+- Flask-Cognito: This extension enables your application to use AWS Cognito for user authentication. It helps manage session tokens and user authentication states with decorators like @cognito_auth_required, which you use to protect routes that require a user to be logged in.
 
-- WTForms
-Usage in Codebase: While part of Flask-WTF, WTForms alone is responsible for defining form fields and validation rules. It’s used extensively in defining forms like LoginForm, where fields and validation rules are specified (e.g., StringField, PasswordField with validators such as DataRequired()).
+- WTForms: While part of Flask-WTF, WTForms alone is responsible for defining form fields and validation rules. It’s used extensively in defining forms like LoginForm, where fields and validation rules are specified (e.g., StringField, PasswordField with validators such as DataRequired()).
 
-- SQLAlchemy
-Usage in Codebase: SQLAlchemy, which is integrated into Flask through Flask-SQLAlchemy, is used for defining the ORM models and handling the SQL transactions transparently. It is pivotal in operations that involve creating, querying, updating, or deleting records from your SQLite database.
+- SQLAlchemy: SQLAlchemy, which is integrated into Flask through Flask-SQLAlchemy, is used for defining the ORM models and handling the SQL transactions transparently. It is pivotal in operations that involve creating, querying, updating, or deleting records from your SQLite database.
 
 ## Configuration
 The application uses environment variables stored in a .env file for configuration. These include keys for AWS Cognito and the Flask app's secret key.
