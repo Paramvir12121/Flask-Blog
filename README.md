@@ -46,25 +46,25 @@ This repository contains a Flask-based web application designed for blogging and
 To get started with this project, follow these steps:
 
 1. Clone the repository:
-   ```bash
+   ```
    git clone https://github.com/Paramvir12121/Flask-Blog.git
     ```
 2. Change directory to the cloned repository:
     ```
-cd your-repository-name
+    cd your-repository-name
     ```
 3. Install required Python packages:
     ```
-pip install -r requirements.txt
+    pip install -r requirements.txt
     ```
 4. Usage
 To run the application locally:
 Set environment variables for AWS Cognito in your .env file:
-```
-COGNITO_REGION=your_cognito_region
-USER_POOL_ID=your_user_pool_id
-APP_CLIENT_ID=your_app_client_id
-```
+    ```
+    COGNITO_REGION=your_cognito_region
+    USER_POOL_ID=your_user_pool_id
+    APP_CLIENT_ID=your_app_client_id
+    ```
 4. Run the Flask server:
 ```
 python flask/server.py
