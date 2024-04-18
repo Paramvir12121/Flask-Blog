@@ -73,9 +73,11 @@ python flask/server.py
 ```
 ## Dependencies
 All dependencies are listed in requirements.txt. Major Dependencies are:
-Flask: Flask is used as the core framework for your web application. It is responsible for creating the app instance, defining routes, and handling requests. For instance, app = Flask(__name__) initializes the Flask application, and the decorators @app.route are used to map URLs to Python functions.
+- Flask: Flask is used as the core framework for your web application. It is responsible for creating the app instance, defining routes, and handling requests. For instance, app  Flask(__name__) initializes the Flask application, and the decorators @app.route are used to map URLs to Python functions.
 
-Flask-WTF: This extension is utilized for handling forms. You use FlaskForm to define forms such as LoginForm, SignupForm, and PostForm. These forms handle user input for authentication, signing up, and posting messages. It integrates seamlessly with your templates to validate user input against specified criteria.
+- Flask-WTF: This extension is utilized for handling forms. You use FlaskForm to define forms such as LoginForm, SignupForm, and PostForm. These forms handle user input for authentication, signing up, and posting messages. It integrates seamlessly with your templates to validate user input against specified criteria.
+
+- WTForms: While part of Flask-WTF, WTForms alone is responsible for defining form fields and validation rules. It’s used extensively in defining forms like LoginForm, where fields and validation rules are specified (e.g., StringField, PasswordField with validators such as DataRequired()).
 
 - Flask-SQLAlchemy: This is used to interact with the SQLite database. It manages the creation of database models and handles all database transactions. For example, db = SQLAlchemy(model_class=Base) initializes the SQLAlchemy object, and models like User and UserPost inherit from db.Model, making them part of the ORM.
 
@@ -87,7 +89,7 @@ Flask-WTF: This extension is utilized for handling forms. You use FlaskForm to d
 
 - Flask-Cognito: This extension enables your application to use AWS Cognito for user authentication. It helps manage session tokens and user authentication states with decorators like @cognito_auth_required, which you use to protect routes that require a user to be logged in.
 
-- WTForms: While part of Flask-WTF, WTForms alone is responsible for defining form fields and validation rules. It’s used extensively in defining forms like LoginForm, where fields and validation rules are specified (e.g., StringField, PasswordField with validators such as DataRequired()).
+
 
 - SQLAlchemy: SQLAlchemy, which is integrated into Flask through Flask-SQLAlchemy, is used for defining the ORM models and handling the SQL transactions transparently. It is pivotal in operations that involve creating, querying, updating, or deleting records from your SQLite database.
 
