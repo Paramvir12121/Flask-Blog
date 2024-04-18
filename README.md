@@ -60,17 +60,17 @@ To get started with this project, follow these steps:
     pip install -r requirements.txt
     ```
 4. Usage
-To run the application locally:
-Set environment variables for AWS Cognito in your .env file:
+    To run the application locally:
+    Set environment variables for AWS Cognito in your .env file:
     ```
     COGNITO_REGION=your_cognito_region
     USER_POOL_ID=your_user_pool_id
     APP_CLIENT_ID=your_app_client_id
     ```
 4. Run the Flask server:
-```
-python flask/server.py
-```
+    ```
+    python flask/server.py
+    ```
 ## Dependencies
 All dependencies are listed in requirements.txt. Major Dependencies are:
 - Flask: Flask is used as the core framework for your web application. It is responsible for creating the app instance, defining routes, and handling requests. For instance, app  Flask(__name__) initializes the Flask application, and the decorators @app.route are used to map URLs to Python functions.
