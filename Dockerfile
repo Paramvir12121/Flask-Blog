@@ -1,6 +1,7 @@
 # Use an official Python runtime as a parent image
 FROM python:3.8-slim
 
+RUN mkdir /app
 # Set the working directory to /app
 WORKDIR /app
 
@@ -17,7 +18,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 
 # # Define environment variable
-# ENV NAME World
+ENV COGNITO_REGION us-east-1
+ENV COGNITO_USERPOOL_ID userid
+ENV COGNITO_APP_CLIENT_ID app-client
+ENV COGNITO_CHECK_TOKEN_EXPIRATION token-exp-check 
 
 # Run app.py when the container launches
-CMD ["python", "app.py"]
+CMD ["python", "server.py"]
