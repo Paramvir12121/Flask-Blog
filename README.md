@@ -89,9 +89,70 @@ All dependencies are listed in requirements.txt. Major Dependencies are:
 
 - Flask-Cognito: This extension enables your application to use AWS Cognito for user authentication. It helps manage session tokens and user authentication states with decorators like @cognito_auth_required, which you use to protect routes that require a user to be logged in.
 
-
-
 - SQLAlchemy: SQLAlchemy, which is integrated into Flask through Flask-SQLAlchemy, is used for defining the ORM models and handling the SQL transactions transparently. It is pivotal in operations that involve creating, querying, updating, or deleting records from your SQLite database.
+
+
+
+## Docker 
+Docker allows for easier orchestration and cross platform compatibility. 
+The Docker setup uses python:3.8-slim as the base image and includes environment configurations for integrating with AWS Cognito.
+
+
+- Structure
+    Dockerfile: Defines the Docker image.
+    flask/: Directory containing Flask application code.
+    requirements.txt: Lists all Python dependencies.
+
+- Environment Variables
+    The Dockerfile configures several environment variables for AWS Cognito integration:
+
+    COGNITO_REGION: AWS region for Cognito services (default us-east-1).
+    COGNITO_USERPOOL_ID: The user pool ID.
+    COGNITO_APP_CLIENT_ID: The app client ID associated with your Cognito user pool.
+    COGNITO_CHECK_TOKEN_EXPIRATION: Boolean to enable token expiration checking.
+
+    But it is not recommended to not expose the environment variables in the repository.
+
+    - Instead of setting environment variables directly in the Dockerfile, you can use an environment file (.env). Eg:
+        ```
+        NAME=World
+        API_KEY=your_api_key_here
+        ```
+        
+        This file can then be used with Docker without hardcoding secrets into your Dockerfile or image:
+        
+        ```
+        docker run --env-file .env myimage
+        ```
+
+    OR
+    - Modify the environment variables in the Docker run command to match your AWS Cognito setup during runtime:
+    ```
+    docker run -d -p 5000:5000 -e COGNITO_REGION='your-region' -e COGNITO_USERPOOL_ID='your-userpool-id' -e COGNITO_APP_CLIENT_ID='your-app-client-id' -e COGNITO_CHECK_TOKEN_EXPIRATION='true' --name my-flask-app flask-blog
+    ```
+
+- Building the Docker Image
+    To build the Docker image, navigate to the directory containing the Dockerfile and run:
+    ```
+    docker build -t flask-blog .
+    ```
+
+- Running the Container
+    Run your Docker container using the following command:
+
+    ```
+    docker run -d -p 5000:5000 --name my-flask-app flask-blog
+    ```
+    This command will start the Flask application in a Docker container named my-flask-app and expose it on port 5000.
+
+- Accessing the Application
+    Once the container is running, access the Flask application by navigating to http://localhost:5000 in your web browser.
+
+- Custom Configuration
+    
+
+
+
 
 ## Configuration
 The application uses environment variables stored in a .env file for configuration. These include keys for AWS Cognito and the Flask app's secret key.

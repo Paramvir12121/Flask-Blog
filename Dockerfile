@@ -21,7 +21,7 @@ EXPOSE 5000
 ENV COGNITO_REGION us-east-1
 ENV COGNITO_USERPOOL_ID userid
 ENV COGNITO_APP_CLIENT_ID app-client
-ENV COGNITO_CHECK_TOKEN_EXPIRATION token-exp-check 
+ENV COGNITO_CHECK_TOKEN_EXPIRATION true 
 
 # Run app.py when the container launches
 CMD ["python", "server.py"]
