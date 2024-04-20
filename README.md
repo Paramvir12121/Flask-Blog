@@ -9,6 +9,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Dependencies](#dependencies)
+- [Docker](#Docker)
 - [Configuration](#configuration)
 - [Contributors](#contributors)
 
@@ -93,7 +94,7 @@ All dependencies are listed in requirements.txt. Major Dependencies are:
 
 
 
-## Docker 
+## Docker Deployment
 Docker allows for easier orchestration and cross platform compatibility. 
 The Docker setup uses python:3.8-slim as the base image and includes environment configurations for integrating with AWS Cognito.
 
@@ -105,11 +106,12 @@ The Docker setup uses python:3.8-slim as the base image and includes environment
 
 - Environment Variables
     The Dockerfile configures several environment variables for AWS Cognito integration:
-
+    ```
     COGNITO_REGION: AWS region for Cognito services (default us-east-1).
     COGNITO_USERPOOL_ID: The user pool ID.
     COGNITO_APP_CLIENT_ID: The app client ID associated with your Cognito user pool.
     COGNITO_CHECK_TOKEN_EXPIRATION: Boolean to enable token expiration checking.
+    ```
 
     But it is not recommended to not expose the environment variables in the repository.
 
