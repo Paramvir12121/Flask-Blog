@@ -117,8 +117,10 @@ The Docker setup uses python:3.8-slim as the base image and includes environment
 
     - Instead of setting environment variables directly in the Dockerfile, you can use an environment file (.env). Eg:
         ```
-        NAME=World
-        API_KEY=your_api_key_here
+        COGNITO_REGION=us-east-1
+        COGNITO_USERPOOL_ID=user_pool_id
+        COGNITO_APP_CLIENT_ID=app_client_ID
+        COGNITO_CHECK_TOKEN_EXPIRATION=true
         ```
         
         This file can then be used with Docker without hardcoding secrets into your Dockerfile or image:
