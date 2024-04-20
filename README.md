@@ -94,7 +94,7 @@ All dependencies are listed in requirements.txt. Major Dependencies are:
 
 
 
-## Docker Deployment
+## Docker
 Docker allows for easier orchestration and cross platform compatibility. 
 The Docker setup uses python:3.8-slim as the base image and includes environment configurations for integrating with AWS Cognito.
 
