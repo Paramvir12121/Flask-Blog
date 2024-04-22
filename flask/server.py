@@ -23,7 +23,7 @@ load_dotenv()
 
 ###########################Cognito Config############################
 from flask_cognito import CognitoAuth
-from flask_cognito import cognito_auth_required
+from flask_cognito import cognito_auth_required, current_user, current_cognito_jwt
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError, PartialCredentialsError, EndpointConnectionError
 
@@ -240,7 +240,7 @@ with app.app_context():
 def home():
     return render_template("home.html",posts=posts)
 
-
+@cognito_auth_required
 @app.route('/secure_area')
 def secure_area():
     return 'Only logged in users can see this'
@@ -333,7 +333,7 @@ def logout():
 #     else:
 #         return render_template("signup.html",form=form)
 
-@login_required
+@cognito_auth_required
 @app.route("/post",methods=[ "GET","POST"] )
 def post():
     form = PostForm()
