@@ -77,15 +77,15 @@ The build and run the image of the project, follow the following steps:
     Navigate to the root directory of the project where the Dockerfile is located and run the following command to build the Docker image:
 
     ```
-    docker build -t flask-blog:0.0.7 .
+    docker build -t flask-blog:0.0.1 .
     ```
-    This command builds a Docker image named flask-blog with the tag 0.0.7.
+    This command builds a Docker image named flask-blog with the tag 0.0.1.
 
 2. Running the Container
     To run your Docker container with the environment configurations from the .env file, use the following command:
 
     ```
-    docker run -d -p 5000:5000 --env-file ./flask/.env --name my-flask-app flask-blog:0.0.7
+    docker run -d -p 5000:5000 --env-file ./flask/.env --name my-flask-app flask-blog:0.0.1
     ```
     This command will:
 
