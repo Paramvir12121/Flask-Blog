@@ -72,6 +72,38 @@ To get started with this project, follow these steps:
     ```
     python flask/server.py
     ```
+The build and run the image of the project, follow the following steps:
+1. Building the Docker Image
+    Navigate to the root directory of the project where the Dockerfile is located and run the following command to build the Docker image:
+
+    ```
+    docker build -t flask-blog:0.0.7 .
+    ```
+    This command builds a Docker image named flask-blog with the tag 0.0.7.
+
+2. Running the Container
+    To run your Docker container with the environment configurations from the .env file, use the following command:
+
+    ```
+    docker run -d -p 5000:5000 --env-file ./flask/.env --name my-flask-app flask-blog:0.0.7
+    ```
+    This command will:
+
+    - Run the container in detached mode (-d).
+    - Map port 5000 of the host to port 5000 of the container, allowing access to the Flask application via http://localhost:5000.
+    - Use the .env file located in the flask directory to configure the environment variables.
+    - Name the container my-flask-app for easy reference.
+
+3. Verifying the Application
+    After running the container, you can verify that the application is up and running by accessing:
+
+    ```
+    http://localhost:5000
+    ```
+    in your web browser. This should load the Flask Blog application hosted inside your Docker container.
+
+
+
 ## Dependencies
 All dependencies are listed in requirements.txt. Major Dependencies are:
 - Flask: Flask is used as the core framework for your web application. It is responsible for creating the app instance, defining routes, and handling requests. For instance, app  Flask(__name__) initializes the Flask application, and the decorators @app.route are used to map URLs to Python functions.
