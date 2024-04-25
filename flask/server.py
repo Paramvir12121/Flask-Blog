@@ -1,4 +1,4 @@
-from flask import Flask,render_template,redirect,url_for
+from flask import Flask,render_template,redirect,url_for, flash
 from flask import request, session
 import random, time, requests,datetime
 from datetime import datetime
@@ -235,7 +235,7 @@ with app.app_context():
 ################################### ROUTES  ################################
     
 
-@cognito_login_required
+
 @app.route("/")
 def home():
     return render_template("home.html",posts=posts)
@@ -250,7 +250,7 @@ def secure_area():
 def about():
     return render_template("about.html")
 
-
+@cognito_auth_required
 @app.route("/contact",methods=[ "GET","POST"])
 def contact():
     if request.method == 'POST':
@@ -261,17 +261,12 @@ def contact():
         new_message = Contact_message(message=message, sender_email=sender_email, sender_name=sender_name)
         db.session.add(new_message)
         db.session.commit()
-
-
         with open('messages.txt', 'a') as file:  # Open the text file in append mode
             file.write(f"from:{sender_name}\nemail:{sender_email}\n{message}\n\n")  # Write the message to the file with a newline
         return render_template("home.html")
     else:
         return render_template("contact.html")
 
-print("User Pool ID:", USER_POOL_ID)
-print("Client ID:", CLIENT_ID)
-print("Region:", REGION)
 
 @app.route('/awslogin', methods=['GET', 'POST'])
 def login():
@@ -309,6 +304,7 @@ def new_password():
             return 'Failed to update password', 400
     return render_template('new_password.html')  # Render a template for new password input
 
+@cognito_auth_required
 @app.route('/awslogout')
 def logout():
     session.pop('email', None)
@@ -316,22 +312,39 @@ def logout():
     return redirect(url_for('home'))
 
 
-# @app.route("/signup",methods=[ "GET","POST"] )
-# def signup():
-#     form = SignupForm()
-#     if form.validate_on_submit():
-#         username = request.form['username']
-#         email = request.form['email']
-#         password = request.form['password']
-#         password_hash = password #add hash process here 
-#         password_salt = "P@ssW0RdS@1t" # generate password salt here 
-#         with app.app_context():
-#             new_user = User(username=username,email=email, password_hash=password_hash, password_salt=password_salt)
-#             db.session.add(new_user)
-#             db.session.commit()
-#         return redirect(url_for('home'))
-#     else:
-#         return render_template("signup.html",form=form)
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    form = SignupForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        email = form.email.data
+        password = form.password.data
+
+        try:
+            response = client.sign_up(
+                ClientId=CLIENT_ID,
+                Username=email,  # Typically, the email is used as the username
+                Password=password,
+                UserAttributes=[
+                    {
+                        'Name': 'email',
+                        'Value': email
+                    },
+                    {
+                        'Name': 'preferred_username',
+                        'Value': username
+                    }
+                ]
+            )
+            flash('Signup successful! Please check your email to confirm your account.', 'success')
+            return redirect(url_for('login'))
+        except client.exceptions.UsernameExistsException:
+            flash('This email already exists.', 'error')
+        except Exception as e:
+            flash('Failed to sign up due to an error: {}'.format(e), 'error')
+
+    return render_template('signup.html', form=form)
+
 
 @cognito_auth_required
 @app.route("/post",methods=[ "GET","POST"] )
