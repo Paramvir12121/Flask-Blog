@@ -5,6 +5,11 @@ import random, time, requests,datetime
 from datetime import datetime
 import sqlite3
 from functools import wraps
+from flask_cors import CORS
+
+from jose import jwt
+from jose.exceptions import JWTError
+import requests
 
 
 from flask_wtf import FlaskForm
@@ -92,6 +97,7 @@ app.config['SECRET_KEY'] = 'your_secret_key'  # Change to your secret key
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///blog_db.db"
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
+CORS(app)
 
 
 app.config['JWT_SECRET_KEY'] = 'your_secret_key'
@@ -204,6 +210,19 @@ def cognito_login_required(f):
 
     return decorated_function
 
+def verify_cognito_jwt(token):
+    # Get the JWKS from Cognito
+    jwks_url = f'https://cognito-idp.{REGION}.amazonaws.com/{USER_POOL_ID}/.well-known/jwks.json'
+    jwks = requests.get(jwks_url).json()
+
+    # Decode the token
+    try:
+        # Additional options might need to be set up depending on your specific Cognito settings
+        decoded = jwt.decode(token, jwks, algorithms=['RS256'], audience=CLIENT_ID)
+        return decoded
+    except JWTError as e:
+        return None
+
 ################################### Database ###############################
 posts = []
 
@@ -256,6 +275,27 @@ def home():
 def secure_area():
     return 'yes You are logged In'
 
+@app.route('/protected')
+def protected():
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        parts = auth_header.split()
+        if parts[0].lower() != 'bearer':
+            return jsonify(msg="Authorization header must start with Bearer"), 401
+        elif len(parts) == 1:
+            return jsonify(msg="Token not found"), 401
+        elif len(parts) > 2:
+            return jsonify(msg="Authorization header must be Bearer token"), 401
+        token = parts[1]
+        user_info = verify_cognito_jwt(token)
+        if user_info:
+            return jsonify(user_info), 200
+        else:
+            return jsonify(msg="Invalid or expired token"), 401
+    else:
+        return jsonify(msg="Missing Authorization Header"), 401
+
+
 
 @app.route("/about")
 def about():
@@ -278,6 +318,26 @@ def contact():
     else:
         return render_template("contact.html")
 
+# @app.route('/login', methods=['POST'])
+# def login():
+#     if not request.is_json:
+#         return jsonify({"msg": "Missing JSON in request"}), 400
+
+#     username = request.json.get('username', None)
+#     password = request.json.get('password', None)
+
+#     if not username or not password:
+#         return jsonify({"msg": "Missing username or password"}), 400
+
+#     # This should check if the user exists and the password is correct.
+#     # Here, we're just checking if the credentials match a placeholder.
+#     if username != 'test' or password != 'test':
+#         return jsonify({"msg": "Bad username or password"}), 401
+
+#     # Identity can be any data that is json serializable
+#     access_token = create_access_token(identity=username)
+#     return jsonify(access_token=access_token), 200
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -288,7 +348,7 @@ def login():
         print("Email:", email)
         print("Password:", password)
         auth_response = sign_in(email, password)
-        print("auth response: ", auth_response)
+        print("auth response:", auth_response['AuthenticationResult']['AccessToken'])
         if auth_response and 'ChallengeName' in auth_response and auth_response['ChallengeName'] == 'NEW_PASSWORD_REQUIRED':
             session['username'] = email  # Store username temporarily
             session['session'] = auth_response['Session']  # Store the session token temporarily
