@@ -74,6 +74,9 @@ class NewPassword(FlaskForm):
 current_year = time.localtime().tm_year
 print(current_year)
 
+class ConfirmationForm(FlaskForm):
+    verification_code = StringField('Verification Code', validators=[DataRequired()])
+    submit = SubmitField('Verify Account')
 
 # As of flask-sqlalchemy version 3.1, you need to pass a subclass of DeclarativeBase to the constructor of the database.
 class Base(DeclarativeBase):
@@ -319,7 +322,7 @@ def signup():
         username = form.username.data
         email = form.email.data
         password = form.password.data
-
+        session['email'] = email
         try:
             response = client.sign_up(
                 ClientId=CLIENT_ID,
@@ -337,13 +340,39 @@ def signup():
                 ]
             )
             flash('Signup successful! Please check your email to confirm your account.', 'success')
-            return redirect(url_for('login'))
+            return redirect(url_for('verify_account'))
         except client.exceptions.UsernameExistsException:
             flash('This email already exists.', 'error')
         except Exception as e:
             flash('Failed to sign up due to an error: {}'.format(e), 'error')
 
     return render_template('signup.html', form=form)
+
+@app.route('/verify', methods=['GET', 'POST'])
+def verify_account():
+    form = ConfirmationForm()
+    if form.validate_on_submit():
+        verification_code = form.verification_code.data
+        email = session.get('email')  # Assuming you've stored the user's email in the session after signup
+
+        try:
+            response = client.confirm_sign_up(
+                ClientId=CLIENT_ID,
+                Username=email,
+                ConfirmationCode=verification_code,
+            )
+            flash('Account verified successfully! You can now log in.', 'success')
+            return redirect(url_for('login'))
+        except client.exceptions.UserNotFoundException:
+            flash('User not found.', 'error')
+        except client.exceptions.CodeMismatchException:
+            flash('Invalid verification code provided.', 'error')
+        except client.exceptions.NotAuthorizedException:
+            flash('User is already confirmed.', 'info')
+        except Exception as e:
+            flash('Failed to verify account due to an error: {}'.format(e), 'error')
+
+    return render_template('verify.html', form=form)
 
 
 @cognito_auth_required

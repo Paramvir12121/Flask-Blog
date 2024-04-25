@@ -2,6 +2,13 @@
 {% block title %}Signup{% endblock %}
 {% from 'bootstrap5/form.html' import render_form %}
 {% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 <div class="masthead" style=" background-image: url('https://www.designbolts.com/wp-content/uploads/2021/01/High-resolution-Blue-sky-image-1.jpg');">
     <main class="color-overlay d-flex justify-content-center align-items-center p-5 body-content">
        

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Your Account</title>
+</head>
+<body>
+    <h1>Verify Your Account</h1>
+    {% for message, category in get_flashed_messages(with_categories=true) %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    <form method="POST" action="{{ url_for('verify_account') }}">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.verification_code.label }}
+            {{ form.verification_code(size=32) }}
+            {% if form.verification_code.errors %}
+                {% for error in form.verification_code.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div>
+            {{ form.submit() }}
+        </div>
+    </form>
+</body>
+</html>
