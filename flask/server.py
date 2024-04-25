@@ -1,9 +1,11 @@
-from flask import Flask,render_template,redirect,url_for, flash
+from flask import Flask,render_template,redirect,url_for, flash, jsonify, request
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask import request, session
 import random, time, requests,datetime
 from datetime import datetime
 import sqlite3
 from functools import wraps
+
 
 from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
@@ -91,12 +93,17 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///blog_db.db"
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
+
+app.config['JWT_SECRET_KEY'] = 'your_secret_key'
+jwt = JWTManager(app)
+
 bootstrap = Bootstrap5(app)
     # csrf = CSRFProtect(app)  # might not be needed, look into documentation
 app.config['COGNITO_REGION'] = os.getenv('COGNITO_REGION')  # e.g., us-east-1
 app.config['COGNITO_USERPOOL_ID'] = os.getenv('USER_POOL_ID')
 app.config['COGNITO_APP_CLIENT_ID'] = os.getenv('APP_CLIENT_ID')
 app.config['COGNITO_CHECK_TOKEN_EXPIRATION'] = False  # Set as per your preference
+
 
 cognito = CognitoAuth(app)
 
@@ -167,6 +174,7 @@ def cognito_login_required(f):
     def decorated_function(*args, **kwargs):
         # Check if the session contains Cognito tokens
         access_token = session.get('access_token')
+        print(access_token)
         if not access_token:
             # No token, redirect to login
             return redirect(url_for('login'))
@@ -246,7 +254,7 @@ def home():
 @cognito_auth_required
 @app.route('/secure_area')
 def secure_area():
-    return 'Only logged in users can see this'
+    return 'yes You are logged In'
 
 
 @app.route("/about")
@@ -271,7 +279,7 @@ def contact():
         return render_template("contact.html")
 
 
-@app.route('/awslogin', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if request.method == 'POST':
@@ -308,7 +316,7 @@ def new_password():
     return render_template('new_password.html')  # Render a template for new password input
 
 @cognito_auth_required
-@app.route('/awslogout')
+@app.route('/logout')
 def logout():
     session.pop('email', None)
     session.pop('access_token', None)
