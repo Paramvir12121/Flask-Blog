@@ -17,7 +17,7 @@ from flask_bootstrap import Bootstrap5
 from wtforms import StringField, PasswordField, SubmitField, ValidationError, Form
 from wtforms.validators import DataRequired, Email, InputRequired, Regexp
 
-# from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -270,39 +270,27 @@ with app.app_context():
 def home():
     return render_template("home.html",posts=posts)
 
-@cognito_auth_required
+
 @app.route('/secure_area')
+@jwt_required()
 def secure_area():
     return 'yes You are logged In'
 
-@app.route('/protected')
-def protected():
-    auth_header = request.headers.get('Authorization')
-    if auth_header:
-        parts = auth_header.split()
-        if parts[0].lower() != 'bearer':
-            return jsonify(msg="Authorization header must start with Bearer"), 401
-        elif len(parts) == 1:
-            return jsonify(msg="Token not found"), 401
-        elif len(parts) > 2:
-            return jsonify(msg="Authorization header must be Bearer token"), 401
-        token = parts[1]
-        user_info = verify_cognito_jwt(token)
-        if user_info:
-            return jsonify(user_info), 200
-        else:
-            return jsonify(msg="Invalid or expired token"), 401
-    else:
-        return jsonify(msg="Missing Authorization Header"), 401
 
+@app.route('/protected2')
+@jwt_required()
+def protected():
+    current_user_email = get_jwt_identity()  # Retrieves the identity of the current user from the JWT
+    return f"Welcome {current_user_email}, you are logged in.", 200
 
 
 @app.route("/about")
 def about():
     return render_template("about.html")
 
-@cognito_auth_required
+
 @app.route("/contact",methods=[ "GET","POST"])
+@jwt_required()
 def contact():
     if request.method == 'POST':
         sender_name = request.form['name']
